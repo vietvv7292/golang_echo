@@ -1,0 +1,141 @@
+{{ template "header.html" . }}
+
+  <h1 class="text-3xl font-bold text-blue-700 mb-4">🔗 Kết nối Database (PostgreSQL, MySQL) trong Golang với Echo</h1>
+
+  <p class="text-gray-700 mb-6">Trong bước này, bạn sẽ học cách kết nối ứng dụng Golang sử dụng Echo framework với cơ sở dữ liệu như PostgreSQL hoặc MySQL.</p>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-3">1️⃣ Cài đặt thư viện</h2>
+  <p class="mb-3">Sử dụng GORM để thao tác ORM, và cài đặt driver tương ứng với PostgreSQL hoặc MySQL:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code># PostgreSQL
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/postgres
+
+# MySQL
+go get -u gorm.io/driver/mysql
+</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-3">2️⃣ Cấu hình kết nối cơ sở dữ liệu</h2>
+
+  <h3 class="text-xl font-medium text-gray-700 mt-4 mb-2">PostgreSQL</h3>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>import (
+    "gorm.io/driver/postgres"
+    "gorm.io/gorm"
+)
+
+func ConnectPostgres() (*gorm.DB, error) {
+    dsn := "host=localhost user=postgres password=yourpassword dbname=yourdb port=5432 sslmode=disable"
+    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    return db, err
+}
+</code></pre>
+
+  <h3 class="text-xl font-medium text-gray-700 mt-4 mb-2">MySQL</h3>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>import (
+    "gorm.io/driver/mysql"
+    "gorm.io/gorm"
+)
+
+func ConnectMySQL() (*gorm.DB, error) {
+    dsn := "user:password@tcp(127.0.0.1:3306)/yourdb?charset=utf8mb4&parseTime=True&loc=Local"
+    db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+    return db, err
+}
+</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-3">3️⃣ Sử dụng kết nối trong ứng dụng</h2>
+  <p class="mb-3">Ví dụ sử dụng trong một controller hoặc service:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>type User struct {
+    ID    uint   `gorm:"primaryKey"`
+    Name  string
+    Email string
+}
+
+func InitDB() *gorm.DB {
+    db, err := ConnectPostgres() // hoặc ConnectMySQL()
+    if err != nil {
+        log.Fatal("Không thể kết nối DB:", err)
+    }
+
+    db.AutoMigrate(&User{})
+    return db
+}
+</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-3">4️⃣ Quản lý kết nối toàn cục</h2>
+  <p class="mb-3">Để tránh tạo lại kết nối mỗi lần xử lý request, nên khởi tạo DB một lần khi chạy ứng dụng.</p>
+
+  <h3 class="text-lg font-medium text-gray-700 mb-2">Tạo biến toàn cục trong <code>main.go</code></h3>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>var DB *gorm.DB
+
+func main() {
+    var err error
+    DB, err = ConnectPostgres()
+    if err != nil {
+        log.Fatal("Lỗi kết nối database:", err)
+    }
+
+    e := echo.New()
+    e.Logger.Fatal(e.Start(":8080"))
+}
+</code></pre>
+
+  <ul class="list-disc list-inside mt-4 mb-6 text-gray-700">
+    <li>DB chỉ khởi tạo 1 lần</li>
+    <li>Dễ dùng trong toàn ứng dụng</li>
+    <li>Hỗ trợ refactor nâng cao bằng Dependency Injection</li>
+  </ul>
+
+  <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">🚀 Refactor nâng cao với Dependency Injection (DI)</h3>
+  <p class="mb-3">Thay vì dùng biến toàn cục, bạn có thể inject DB vào handler để code dễ test hơn.</p>
+
+  <h4 class="text-lg font-medium text-gray-700 mb-2">1. Struct handler</h4>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>type Handler struct {
+    DB *gorm.DB
+}
+</code></pre>
+
+  <h4 class="text-lg font-medium text-gray-700 mt-4 mb-2">2. Khởi tạo trong <code>main.go</code></h4>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>func main() {
+    db, err := ConnectPostgres()
+    if err != nil {
+        log.Fatal("Lỗi kết nối DB:", err)
+    }
+
+    h := &Handler{DB: db}
+
+    e := echo.New()
+    e.GET("/users", h.GetUsers)
+    e.Logger.Fatal(e.Start(":8080"))
+}
+</code></pre>
+
+  <h4 class="text-lg font-medium text-gray-700 mt-4 mb-2">3. Handler sử dụng DB</h4>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>func (h *Handler) GetUsers(c echo.Context) error {
+    var users []User
+    if err := h.DB.Find(&users).Error; err != nil {
+        return c.JSON(http.StatusInternalServerError, map[string]string{
+            "error": "Không thể lấy danh sách user",
+        })
+    }
+    return c.JSON(http.StatusOK, users)
+}
+</code></pre>
+
+  <p class="font-medium text-gray-700 mt-4 mb-2">💡 Lợi ích của DI:</p>
+  <ul class="list-disc list-inside text-gray-700">
+    <li>Không dùng biến toàn cục</li>
+    <li>Dễ viết test</li>
+    <li>Dễ mở rộng (config, logger, service...)</li>
+  </ul>
+
+  <p class="mt-4 text-gray-600">Đây là bước đệm cho Clean Architecture hoặc kiến trúc theo tầng (Layered Architecture).</p>
+
+{{ template "footer.html" . }}

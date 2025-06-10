@@ -1,0 +1,98 @@
+{{ template "header.html" . }}
+
+  <h1 class="text-3xl font-bold text-green-700 mb-4">🚀 Triển khai ứng dụng Golang + Echo lên server thật với HTTPS</h1>
+
+  <p class="text-gray-700 mb-6">Tài liệu này hướng dẫn triển khai ứng dụng Echo lên máy chủ Ubuntu, chạy với domain/subdomain thực tế (ví dụ: <code>golang.vuvanviet.com</code>) và cấu hình HTTPS bằng Let's Encrypt.</p>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🖥️ 1. Chuẩn bị server Ubuntu</h2>
+  <ul class="list-disc list-inside text-gray-700">
+    <li>Server Ubuntu 20.04 trở lên (VD: VPS của DigitalOcean, Vultr...)</li>
+    <li>SSH truy cập root hoặc user có quyền <code>sudo</code></li>
+    <li>Subdomain đã trỏ A record về IP server (VD: <code>golang.vuvanviet.com</code>)</li>
+  </ul>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">📦 2. Cài đặt Golang và build app</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code># SSH vào server
+ssh root@your_server_ip
+
+# Cài Golang (nếu chưa có)
+wget https://go.dev/dl/go1.21.6.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.21.6.linux-amd64.tar.gz
+
+# Thêm vào ~/.bashrc hoặc ~/.zshrc
+export PATH=$PATH:/usr/local/go/bin
+
+# Build app
+cd /path/to/your/app
+go build -o app</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🛠 3. Cài đặt Caddy (HTTPS tự động)</h2>
+  <p>Caddy là web server đơn giản có hỗ trợ HTTPS tự động bằng Let’s Encrypt, rất phù hợp để reverse proxy đến ứng dụng Golang.</p>
+
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code># Cài Caddy
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🌐 4. Cấu hình Caddy cho subdomain</h2>
+  <p>File cấu hình Caddy nằm ở <code>/etc/caddy/Caddyfile</code>. Cấu hình reverse proxy đến app Golang:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code># /etc/caddy/Caddyfile
+golang.vuvanviet.com {
+    reverse_proxy localhost:8080
+}</code></pre>
+
+  <p class="mt-2">Caddy sẽ tự động:</p>
+  <ul class="list-disc list-inside text-gray-700">
+    <li>Listen trên port 80 và 443</li>
+    <li>Redirect HTTP → HTTPS</li>
+    <li>Yêu cầu và gia hạn chứng chỉ SSL miễn phí từ Let's Encrypt</li>
+  </ul>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🚦 5. Chạy ứng dụng Golang với systemd</h2>
+  <p>Tạo file service để app tự chạy nền và khởi động cùng hệ thống:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code># /etc/systemd/system/golang-app.service
+[Unit]
+Description=Golang Echo App
+After=network.target
+
+[Service]
+ExecStart=/path/to/your/app
+WorkingDirectory=/path/to/your/app
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code># Reload và enable service
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable golang-app
+sudo systemctl start golang-app
+</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">✅ Kiểm tra và hoàn tất</h2>
+  <ul class="list-disc list-inside text-gray-700">
+    <li>Mở trình duyệt và truy cập <code>https://golang.vuvanviet.com</code></li>
+    <li>Kiểm tra app hoạt động bình thường</li>
+    <li>Kiểm tra HTTPS hợp lệ (có ổ khóa xanh)</li>
+  </ul>
+
+  <p class="mt-4">Vậy là bạn đã triển khai thành công ứng dụng Golang với Echo + HTTPS trên server thực.</p>
+
+{{ template "footer.html" . }}

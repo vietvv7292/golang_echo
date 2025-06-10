@@ -1,0 +1,112 @@
+{{ template "header.html" . }}
+<h2>Giới thiệu về Echo</h2>
+<p><strong>Echo</strong> là một web framework hiệu suất cao cho ngôn ngữ lập trình Go (Golang). Nó được thiết kế để đơn giản hóa quá trình xây dựng các ứng dụng web và RESTful API, với giao diện lập trình thân thiện và tốc độ xử lý cao.</p>
+
+<h3>Vì sao nên chọn Echo?</h3>
+<ul>
+  <li>🔧 API rõ ràng, dễ dùng</li>
+  <li>⚡ Hiệu suất cao, hỗ trợ concurrency tốt</li>
+  <li>🧱 Hỗ trợ middleware, group routes, context mở rộng</li>
+  <li>📦 Tích hợp dễ dàng với JSON, validator, logger, CORS,...</li>
+  <li>🌐 Tối ưu cho việc xây dựng RESTful API</li>
+</ul>
+
+<h2>1. Cài đặt Echo</h2>
+<pre><code>go get github.com/labstack/echo/v4</code></pre>
+
+<h2>2. Cấu trúc dự án mẫu</h2>
+<pre><code>
+/myapp
+├── main.go
+├── controller/
+│   └── user_controller.go
+├── model/
+│   └── user.go
+├── router/
+│   └── routes.go
+└── views/
+    └── rest-api-echo.html
+</code></pre>
+
+<h2>3. Tạo ứng dụng Echo cơ bản</h2>
+<pre><code>
+// main.go
+package main
+
+import (
+  "github.com/labstack/echo/v4"
+  "myapp/router"
+)
+
+func main() {
+  e := echo.New()
+  router.SetupRoutes(e)
+  e.Logger.Fatal(e.Start(":8080"))
+}
+</code></pre>
+
+<h2>4. Tạo controller xử lý API</h2>
+<pre><code>
+// controller/user_controller.go
+package controller
+
+import (
+  "net/http"
+  "github.com/labstack/echo/v4"
+)
+
+type User struct {
+  ID   int    `json:"id"`
+  Name string `json:"name"`
+}
+
+func GetUsers(c echo.Context) error {
+  users := []User{
+    {ID: 1, Name: "Alice"},
+    {ID: 2, Name: "Bob"},
+  }
+  return c.JSON(http.StatusOK, users)
+}
+</code></pre>
+
+<h2>5. Khai báo router</h2>
+<pre><code>
+// router/routes.go
+package router
+
+import (
+  "github.com/labstack/echo/v4"
+  "myapp/controller"
+)
+
+func SetupRoutes(e *echo.Echo) {
+  api := e.Group("/api")
+  api.GET("/users", controller.GetUsers)
+}
+</code></pre>
+
+<h2>6. Kiểm thử API</h2>
+<p>Chạy ứng dụng và gửi request tới <code>http://localhost:8080/api/users</code>, bạn sẽ nhận được JSON:</p>
+<pre><code>[
+  {
+    "id": 1,
+    "name": "Alice"
+  },
+  {
+    "id": 2,
+    "name": "Bob"
+  }
+]</code></pre>
+
+<h2>7. Một số tính năng nâng cao của Echo</h2>
+<ul>
+  <li><strong>Middleware:</strong> Ghi log, kiểm tra xác thực, CORS, rate limit,...</li>
+  <li><strong>Validator:</strong> Sử dụng gopkg.in/go-playground/validator.v9</li>
+  <li><strong>JWT:</strong> Xác thực bằng token (dùng middleware sẵn có)</li>
+  <li><strong>Context mở rộng:</strong> Truyền giá trị giữa các tầng xử lý</li>
+</ul>
+
+<h2>Kết luận</h2>
+<p>Echo là lựa chọn lý tưởng cho việc xây dựng các RESTful API với Go. Nhờ vào cấu trúc rõ ràng, hiệu năng cao và cộng đồng hỗ trợ tốt, bạn có thể xây dựng các hệ thống backend chuyên nghiệp từ nhỏ đến lớn một cách hiệu quả.</p>
+
+{{ template "footer.html" . }}

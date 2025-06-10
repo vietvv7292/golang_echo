@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ block "title" . }}{{ .Title }}{{ end }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #f8fafc, #e0f2fe);
+      color: #1f2937;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: white;
+      max-width: 700px;
+      width: 100%;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #0ea5e9;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+    h2 {
+      font-size: 22px;
+      margin-top: 30px;
+      color: #334155;
+    }
+    ul {
+      padding-left: 20px;
+      line-height: 1.6;
+      font-size: 1.1rem;
+    }
+    li {
+      margin: 10px 0;
+    }
+    code {
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+    p {
+      line-height: 1.6;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #475569;
+      font-size: 14px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    {{ block "content" . }}{{ end }}
+    <div class="footer">© 2025 - Hành trình học Go của bạn bắt đầu từ đây.</div>
+  </div>
+</body>
+</html>

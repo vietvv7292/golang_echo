@@ -1,0 +1,115 @@
+{{ template "header.html" . }}
+
+  <h1 class="text-3xl font-bold text-indigo-700 mb-4">🧭 Tổ chức code theo mô hình MVC trong Echo + Golang</h1>
+
+  <p class="text-gray-700 mb-6">Mô hình MVC (Model - View - Controller) giúp tổ chức ứng dụng rõ ràng, dễ mở rộng và dễ bảo trì. Trong tài liệu này, bạn sẽ học cách tách biệt các thành phần chính của ứng dụng web sử dụng Echo framework.</p>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">📁 1. Cấu trúc thư mục chuẩn</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>project-root/
+├── main.go
+├── config/         # Cấu hình chung (DB, env, ...)
+├── models/         # Định nghĩa Model
+├── controllers/    # Xử lý logic HTTP
+├── routes/         # Định nghĩa các route
+├── services/       # Logic nghiệp vụ (nếu cần)
+├── middlewares/    # Các middleware
+└── utils/          # Hàm helper, tiện ích</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🧩 2. Model - Định nghĩa dữ liệu</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>// file: models/user.go
+package models
+
+type User struct {
+    ID    uint   `gorm:"primaryKey"`
+    Name  string `json:"name"`
+    Email string `json:"email"`
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🎯 3. Controller - Điều hướng luồng xử lý</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>// file: controllers/user_controller.go
+package controllers
+
+import (
+    "net/http"
+    "yourapp/models"
+    "github.com/labstack/echo/v4"
+)
+
+func GetUsers(c echo.Context) error {
+    users := []models.User{
+        {ID: 1, Name: "Alice", Email: "alice@example.com"},
+        {ID: 2, Name: "Bob", Email: "bob@example.com"},
+    }
+    return c.JSON(http.StatusOK, users)
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🛣 4. Route - Khai báo endpoint</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>// file: routes/routes.go
+package routes
+
+import (
+    "yourapp/controllers"
+    "github.com/labstack/echo/v4"
+)
+
+func InitRoutes(e *echo.Echo) {
+    e.GET("/users", controllers.GetUsers)
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">🚀 5. main.go - Khởi động ứng dụng</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>// file: main.go
+package main
+
+import (
+    "yourapp/routes"
+    "github.com/labstack/echo/v4"
+)
+
+func main() {
+    e := echo.New()
+    routes.InitRoutes(e)
+    e.Logger.Fatal(e.Start(":8080"))
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">💡 6. Mở rộng thêm với Service Layer</h2>
+  <p class="mb-3">Bạn có thể tách logic nghiệp vụ khỏi Controller bằng cách tạo <code>services/user_service.go</code>:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>package services
+
+import "yourapp/models"
+
+func GetAllUsers() []models.User {
+    return []models.User{
+        {ID: 1, Name: "Alice"},
+        {ID: 2, Name: "Bob"},
+    }
+}</code></pre>
+
+  <p class="mt-4">Sau đó trong controller chỉ gọi từ service:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>users := services.GetAllUsers()</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">✅ Tổng kết</h2>
+  <ul class="list-disc list-inside text-gray-700">
+    <li>Model: chứa định nghĩa dữ liệu và thao tác DB</li>
+    <li>Controller: nhận request, xử lý logic đơn giản</li>
+    <li>Route: khai báo URL, ánh xạ đến controller</li>
+    <li>Service: chứa logic nghiệp vụ tái sử dụng</li>
+    <li>Middleware: xử lý cross-cutting concerns như JWT, CORS</li>
+  </ul>
+
+  <p class="mt-4 text-gray-600">Tổ chức theo MVC giúp ứng dụng dễ maintain, dễ test, dễ mở rộng theo nguyên lý Separation of Concerns.</p>
+
+{{ template "footer.html" . }}

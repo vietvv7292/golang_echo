@@ -1,0 +1,102 @@
+{{ template "header.html" . }}
+
+  <h1 class="text-3xl font-bold text-green-700 mb-4">🔐 Xác thực người dùng với JWT trong Golang + Echo</h1>
+
+  <p class="text-gray-700 mb-6">Trong tài liệu này, bạn sẽ học cách tạo Middleware xác thực JWT, tạo route cần xác thực, và quản lý phiên người dùng một cách an toàn trong ứng dụng Golang sử dụng Echo Framework.</p>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">1️⃣ Cài đặt thư viện JWT</h2>
+  <p class="mb-3">Chúng ta sẽ dùng thư viện <code>github.com/golang-jwt/jwt/v5</code>:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>go get github.com/golang-jwt/jwt/v5</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">2️⃣ Tạo hàm generate JWT</h2>
+  <p class="mb-3">Ví dụ tạo token khi user đăng nhập thành công:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>import (
+    "time"
+    "github.com/golang-jwt/jwt/v5"
+)
+
+var jwtSecret = []byte("your-secret-key")
+
+func GenerateJWT(userID uint) (string, error) {
+    claims := jwt.MapClaims{
+        "user_id": userID,
+        "exp":     time.Now().Add(time.Hour * 24).Unix(),
+    }
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+    return token.SignedString(jwtSecret)
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">3️⃣ Middleware xác thực JWT</h2>
+  <p class="mb-3">Middleware để xác minh token và gán user vào context:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+    return func(c echo.Context) error {
+        authHeader := c.Request().Header.Get("Authorization")
+        if authHeader == "" {
+            return echo.NewHTTPError(http.StatusUnauthorized, "Missing token")
+        }
+
+        tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+        token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+            if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+                return nil, fmt.Errorf("Unexpected signing method")
+            }
+            return jwtSecret, nil
+        })
+
+        if err != nil || !token.Valid {
+            return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+        }
+
+        claims := token.Claims.(jwt.MapClaims)
+        c.Set("user_id", claims["user_id"])
+
+        return next(c)
+    }
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">4️⃣ Định nghĩa route cần xác thực</h2>
+  <p class="mb-3">Gắn middleware cho route yêu cầu login:</p>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>func main() {
+    e := echo.New()
+
+    e.POST("/login", LoginHandler) // Trả về JWT
+
+    r := e.Group("/api")
+    r.Use(JWTMiddleware)
+    r.GET("/profile", GetProfile)
+
+    e.Logger.Fatal(e.Start(":8080"))
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">5️⃣ Handler trả về thông tin người dùng</h2>
+  <pre class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"><code>func GetProfile(c echo.Context) error {
+    userID := c.Get("user_id")
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "message": "Đã xác thực JWT",
+        "user_id": userID,
+    })
+}</code></pre>
+
+  <hr class="my-6">
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">✅ Tổng kết</h2>
+  <ul class="list-disc list-inside text-gray-700">
+    <li>JWT nên được truyền qua header <code>Authorization: Bearer &lt;token&gt;</code></li>
+    <li>Token chứa thông tin người dùng và thời hạn</li>
+    <li>Middleware sẽ xác thực và giải mã token</li>
+    <li>Handler có thể lấy user ID từ context</li>
+  </ul>
+
+  <p class="mt-4 text-gray-600">Bạn có thể mở rộng bằng cách lấy user từ DB dựa vào <code>user_id</code> trong token.</p>
+
+{{ template "footer.html" . }}
