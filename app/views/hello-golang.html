@@ -27,16 +27,6 @@
 └── config/              // (Tùy chọn) cấu hình cho ứng dụng
 </code></pre>
 
-<h2>🌍 Các ứng dụng nổi bật sử dụng Golang</h2>
-<ul>
-  <li><strong>Docker:</strong> Nền tảng container hóa phổ biến.</li>
-  <li><strong>Kubernetes:</strong> Hệ thống quản lý container mạnh mẽ.</li>
-  <li><strong>Terraform:</strong> Công cụ quản lý hạ tầng (IaC).</li>
-  <li><strong>Prometheus:</strong> Hệ thống giám sát hiệu suất.</li>
-  <li><strong>InfluxDB:</strong> Cơ sở dữ liệu time-series.</li>
-  <li><strong>Nhiều dịch vụ của Google Cloud Platform</strong> cũng được viết bằng Go.</li>
-</ul>
-
 <h2>🔤 Cú pháp cơ bản trong Golang</h2>
 
 <h3>1. Khai báo biến</h3>
@@ -49,6 +39,46 @@ c := 42</code></pre>
   <li><code>string</code>, <code>int</code>, <code>float64</code>, <code>bool</code></li>
   <li><code>array</code>, <code>slice</code>, <code>map</code>, <code>struct</code>, <code>interface</code></li>
 </ul>
+
+<h3>📦 Giải thích chi tiết các kiểu dữ liệu</h3>
+
+<h4>1. Kiểu cơ bản (Basic types)</h4>
+<ul>
+  <li><code>string</code>: Chuỗi văn bản. Ví dụ: <code>"Xin chào"</code></li>
+  <li><code>int</code>, <code>int8</code>, <code>int16</code>, <code>int32</code>, <code>int64</code>: Số nguyên</li>
+  <li><code>float32</code>, <code>float64</code>: Số thực (số thập phân)</li>
+  <li><code>bool</code>: Kiểu logic, chỉ có <code>true</code> hoặc <code>false</code></li>
+</ul>
+
+<h4>2. Mảng và Slice</h4>
+<ul>
+  <li><code>[3]int</code>: Mảng có độ dài cố định gồm 3 số nguyên. Ví dụ: <code>[3]int{1, 2, 3}</code></li>
+  <li><code>[]int</code>: Slice là một danh sách có độ dài linh hoạt. Ví dụ: <code>[]int{4, 5, 6}</code></li>
+</ul>
+
+<h4>3. Map (Bản đồ - Tập hợp khóa/giá trị)</h4>
+<ul>
+  <li>Dạng: <code>map[string]int</code> nghĩa là một map với khóa là chuỗi và giá trị là số nguyên.</li>
+  <li>Ví dụ: <code>map[string]int{"apple": 2, "banana": 5}</code></li>
+</ul>
+
+<h4>4. Struct (Cấu trúc)</h4>
+<ul>
+  <li>Struct là cách định nghĩa kiểu dữ liệu do người dùng tự định nghĩa.</li>
+</ul>
+<pre><code>type Person struct {
+  Name string
+  Age  int
+}</code></pre>
+
+<h4>5. Interface (Giao diện)</h4>
+<ul>
+  <li>Interface mô tả tập hợp các phương thức mà một kiểu dữ liệu cần có để được coi là "tuân theo" interface đó.</li>
+</ul>
+<pre><code>type Speaker interface {
+  Speak() string
+}</code></pre>
+
 
 <h3>3. Câu lệnh điều kiện</h3>
 <pre><code>if x > 10 {
