@@ -138,4 +138,58 @@ func main() {
 
   <p class="mt-4 text-gray-600">Đây là bước đệm cho Clean Architecture hoặc kiến trúc theo tầng (Layered Architecture).</p>
 
+<hr class="my-6">
+
+<h2 class="text-2xl font-bold mb-4">🔌 Ví dụ Kết nối MySQL trong Golang với GORM & Echo</h2>
+
+<p class="mb-4">Để kết nối MySQL từ ứng dụng sử dụng Echo framework và GORM, bạn cần làm các bước sau:</p>
+
+<h3 class="text-xl font-semibold mb-2">1. Cài đặt thư viện</h3>
+<pre class="bg-gray-100 p-3 rounded text-sm"><code>go get gorm.io/gorm
+go get gorm.io/driver/mysql</code></pre>
+
+<h3 class="text-xl font-semibold mb-2">2. Cấu hình kết nối MySQL</h3>
+<pre class="bg-gray-100 p-3 rounded text-sm"><code>import (
+    "gorm.io/gorm"
+    "gorm.io/driver/mysql"
+)
+
+dsn := "user:password@tcp(host:port)/database?charset=utf8mb4&amp;parseTime=True&amp;loc=Local"
+db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+if err != nil {
+    log.Fatal("Kết nối thất bại:", err)
+}</code></pre>
+
+<h3 class="text-xl font-semibold mb-2">3. Model ví dụ</h3>
+<pre class="bg-gray-100 p-3 rounded text-sm"><code>type Admin struct {
+    ID   uint
+    Name string
+}
+
+var admins []Admin
+db.Find(&admins)</code></pre>
+
+<h3 class="text-xl font-semibold mb-2">4. Render dữ liệu ra Echo</h3>
+<pre class="bg-gray-100 p-3 rounded text-sm"><code>data := map[string]interface{}{
+    "Title":  "Danh sách Admin",
+    "Admins": admins,
+}
+return c.Render(http.StatusOK, "db-admins.html", data)</code></pre>
+
+<h3 class="text-xl font-semibold mb-2">5. Template HTML sẽ hiển thị data</h3>
+<pre class="bg-gray-100 p-3 rounded text-sm"><code>&lt;h2&gt;📋 Danh sách Admin&lt;/h2&gt;
+{{ if .Admins }}
+  &lt;ul&gt;
+    {{ range .Admins }}
+      &lt;li&gt;ID: {{ .ID }}, Tên: {{ .Name }}&lt;/li&gt;
+    {{ end }}
+  &lt;/ul&gt;
+{{ else }}
+  &lt;p&gt;Không có admin nào trong cơ sở dữ liệu.&lt;/p&gt;
+{{ end }}</code></pre>
+
+<p class="mt-4 text-sm text-gray-600">🔒 Lưu ý: Không commit trực tiếp mật khẩu vào mã nguồn. Hãy dùng biến môi trường hoặc file config.</p>
+
+
+
 {{ template "footer.html" . }}

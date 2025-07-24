@@ -1,8 +1,11 @@
 package controller
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // import "fmt"
@@ -17,7 +20,6 @@ func (h *HomeController) Index(c echo.Context) error {
 	// fmt.Printf("%#v\n", data)
 	return c.Render(http.StatusOK, "index.html", data)
 }
-
 
 func (h *HomeController) HelloGolang(c echo.Context) error {
 	data := map[string]interface{}{
@@ -36,10 +38,29 @@ func (h *HomeController) RestAPI(c echo.Context) error {
 }
 
 func (h *HomeController) DBConnection(c echo.Context) error {
+	dsn := "vietvv:pass@tcp(mysql-e54fbe6-rooney-e8ac.b.aivencloud.com:28586)/mastersns2?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Kết nối DB lỗi: "+err.Error())
+	}
+
+	// Model ví dụ
+	type Admin struct {
+		ID   uint
+		Name string
+	}
+
+	var admins []Admin
+	if err := db.Find(&admins).Error; err != nil {
+		return c.String(http.StatusInternalServerError, "Lỗi truy vấn: "+err.Error())
+	}
+
 	data := map[string]interface{}{
 		"Title":   "Kết nối Database",
 		"Message": "Sử dụng PostgreSQL hoặc MySQL với Go.",
+		"Admins":  admins,
 	}
+
 	return c.Render(http.StatusOK, "db-connection.html", data)
 }
 
